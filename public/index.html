@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="./style.css" />
+    <link rel="shortcut icon" href="./favicon.ico" type="image/x-icon" />
+    <script src="./ace/ace.js" defer></script>
+    <script src="./app.js" defer></script>
+    <title>Basic Browser IDE (Deno Subhosting)</title>
+  </head>
+  <body>
+    <nav>
+      <h1>Basic Browser IDE</h1>
+      <div id="project-selector">
+        <select id="project-list">
+          {projList}
+        </select>
+        <form action="/project" method="POST">
+          <button type="submit" id="new-project">Generate New Project</button>
+        </form>
+      </div>
+    </nav>
+
+    <main>
+      <div style="position: relative; height: 100%; width: 100%">
+        <div id="editor-container">
+          <div id="editor"></div>
+        </div>
+        <div id="deployments-container">
+          <h3>Deployments</h3>
+          <div id="deployments"></div>
+        </div>
+        <button id="deploy-button">Save & Deploy</button>
+      </div>
+    </main>
+  </body>
+</html>
