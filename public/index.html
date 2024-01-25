@@ -3,36 +3,55 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="./style.css" />
-    <link rel="shortcut icon" href="./favicon.ico" type="image/x-icon" />
-    <script src="./ace/ace.js" defer></script>
-    <script src="./app.js" defer></script>
-    <title>Basic Browser IDE (Deno Subhosting)</title>
+    <script type="module" src="./index.js"></script>
+    <link rel="stylesheet" href="style.css" />
+    <link rel="shortcut icon" href="#" type="image/x-icon" />
+    <title>Subhost Manager</title>
   </head>
   <body>
-    <nav>
-      <h1>Basic Browser IDE</h1>
-      <div id="project-selector">
-        <select id="project-list">
-          {projList}
-        </select>
-        <form action="/project" method="POST">
-          <button type="submit" id="new-project">Generate New Project</button>
-        </form>
-      </div>
-    </nav>
+    <h1>Subhost Manager</h1>
 
-    <main>
-      <div style="position: relative; height: 100%; width: 100%">
-        <div id="editor-container">
-          <div id="editor"></div>
-        </div>
-        <div id="deployments-container">
-          <h3>Deployments</h3>
-          <div id="deployments"></div>
-        </div>
-        <button id="deploy-button">Save & Deploy</button>
+    <div class="tabs">
+      <div class="tab">createDeployment</div>
+      <div class="tab active">listDeployments</div>
+      <div class="tab">deleteDeployments</div>
+      <div class="tab">getDeployment</div>
+    </div>
+    <div class="containers">
+      <div id="createDeploymentContainer" class="container hidden">
+        <h2>Create Deployment</h2>
+        <button id="createDeploymentBtn">test createDeployment</button>
       </div>
-    </main>
+      <div id="listDeploymentsContainer" class="container">
+        <h2>List Deployments</h2>
+        <button id="listDeploymentsBtn">test listDeployments</button>
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Created At</th>
+              <th>Databases</th>
+              <th>Description</th>
+              <th>Status</th>
+              <th>Updated At</th>
+              <th>Project ID</th>
+            </tr>
+          </thead>
+          <tbody id="ldtbody">
+            <tr>
+              <td colspan="7" style="text-align: center">None to show</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="deleteDeploymentsContainer" class="container hidden">
+        <h2>Delete Deployments</h2>
+        <button id="deleteDeploymentsBtn">test deleteDeployments</button>
+      </div>
+      <div id="getDeploymentContainer" class="container hidden">
+        <h2>Get Deployment</h2>
+        <button id="getDeploymentBtn">test getDeployment</button>
+      </div>
+    </div>
   </body>
 </html>

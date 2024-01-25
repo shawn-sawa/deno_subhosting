@@ -1,4 +1,3 @@
-// import { sendRequest } from "./utils.ts";
 import BaseClass from "./BaseClass.ts";
 
 export default class Deployment extends BaseClass {
@@ -8,8 +7,8 @@ export default class Deployment extends BaseClass {
   status: string;
   domains: string[];
   databases: object;
-  createdAt: string; // "2021-08-01T00:00:00Z"
-  updatedAt: string; // "2024-01-18T04:51:25.759515Z"
+  createdAt: string;
+  updatedAt: string;
 
   constructor({ details, orgParams }: InitDeploymentParams) {
     super(orgParams);
@@ -36,14 +35,17 @@ export default class Deployment extends BaseClass {
     return await this.sendRequest({ url, method, headers: this.headers, body });
   }
 
-  async buildLogs(): Promise<APIResponse<BuildLog>> {
+  async buildLogs(): Promise<BuildLog | Error> {
     const method = "GET";
     const url = this.url(`/deployments/${this.id}/build_logs`);
-    return await this.sendRequest<BuildLog>({
+    const res = await this.sendRequest<BuildLog>({
       url,
       method,
       headers: this.headers,
     });
+    if (res.status === "error") return new Error(res.error?.message || "Error getting build logs");
+
+    return res.data!;
   }
 
   // TODO: Add query params
@@ -52,6 +54,7 @@ export default class Deployment extends BaseClass {
     const url = this.url(`/deployments/${this.id}/app_logs`);
     return await this.sendRequest({ url, method, headers: this.headers });
   }
+
   async getDetails(): Promise<APIResponse<DeploymentDetails>> {
     const method = "GET";
     const url = this.url(`/deployments/${this.id}`);

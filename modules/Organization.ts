@@ -7,24 +7,29 @@ export default class Organization extends BaseClass {
 
   constructor(params: InitOrgParams) {
     super(params);
-    this.initProjects();
   }
 
-  private async initProjects() {
-    const projectList = await this.listProjects();
+  async initProjects() {
+    return new Promise(async (resolve, reject) => {
+      const projectList = await this.listProjects();
 
-    if (projectList.status !== "success") return;
-    const projects = projectList.data;
-    // TODO: make this better
-    if (!Array.isArray(projects)) return;
+      if (projectList.status !== "success") return;
+      const projects = projectList.data;
+      // TODO: make this better
+      if (!Array.isArray(projects)) return;
 
-    projects.forEach((project) => {
-      const params: InitProjectParams = {
-        orgParams: this,
-        details: project,
-      };
-
-      this.projects.push(new Project(params));
+      projects.forEach(async (project, n, arr) => {
+        const params: InitProjectParams = {
+          orgParams: this,
+          details: project,
+        };
+        const newProject = new Project(params);
+        await newProject.initDeployments();
+        this.projects.push(newProject);
+        if (n === arr.length - 1) {
+          resolve(this);
+        }
+      });
     });
   }
 
@@ -44,7 +49,16 @@ export default class Organization extends BaseClass {
       headers: this.headers,
     });
   }
-
+  async getProject(projId: string) {
+    if (this.projects.length) {
+      return this.projects.find((project) => project.id === projId);
+    }
+    const apiResponse = await this.listProjects();
+    if (apiResponse.status !== "success" || !apiResponse.data) return console.log("Failed to get projects");
+    const project = apiResponse.data.find((project) => project.id === projId);
+    if (!project) return console.log("Project not found");
+    return new Project({ orgParams: this, details: project });
+  }
   async deleteProject(projectId: string): Promise<APIResponse<null>> {
     const method = "DELETE";
     const url = this.url(`/projects/${projectId}`);

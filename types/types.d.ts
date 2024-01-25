@@ -2,7 +2,6 @@ interface RequestParams {
   url: string;
   method: "GET" | "POST" | "PATCH" | "DELETE";
   headers: HeadersInit;
-  // deno-lint-ignore no-explicit-any
   body?: { [key: string]: any } | null;
 }
 
@@ -54,14 +53,14 @@ type MetricValue = (string | number)[];
 
 type ErrorResponse =
   | {
-    statusCode: string;
-    message: string;
-  }
+      statusCode: string;
+      message: string;
+    }
   | Error
   | void;
 
 type APIResponse<T> = {
-  status: "success" | "error";
+  status: "success" | "error" | "other";
   data?: T;
   error?: ErrorResponse;
 };

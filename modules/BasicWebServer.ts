@@ -1,18 +1,20 @@
 import { serveDir } from "https://deno.land/std@0.212.0/http/file_server.ts";
 
 export class BasicWebServer {
-  _get: Map<string, (req: Request) => Response | Promise<Response>> = new Map();
-  _post: Map<string, (req: Request) => Response | Promise<Response>> = new Map();
-  _put: Map<string, (req: Request) => Response | Promise<Response>> = new Map();
-  _patch: Map<string, (req: Request) => Response | Promise<Response>> = new Map();
-  _delete: Map<string, (req: Request) => Response | Promise<Response>> = new Map();
+  private _get: Map<string, (req: Request) => Response | Promise<Response>> = new Map();
+  private _post: Map<string, (req: Request) => Response | Promise<Response>> = new Map();
+  private _put: Map<string, (req: Request) => Response | Promise<Response>> = new Map();
+  private _patch: Map<string, (req: Request) => Response | Promise<Response>> = new Map();
+  private _delete: Map<string, (req: Request) => Response | Promise<Response>> = new Map();
+  private _options: Map<string, (req: Request) => Response | Promise<Response>> = new Map();
 
-  _static: string | null = null;
+  private _static: string | null = null;
 
-  port = 8000;
-  hostname = "127.0.0.1";
-  server: Deno.HttpServer;
-  constructor({ port, hostname }: { port?: number; hostname?: string } = {}) {
+  // deploy automatically overrides this
+  private port = 8000;
+  private hostname = "127.0.0.1";
+  private server: Deno.HttpServer;
+  constructor({ port, hostname }: { port?: number; hostname?: string } | undefined = {}) {
     if (port) this.port = port;
     if (hostname) this.hostname = hostname;
     this.server = Deno.serve(
@@ -32,7 +34,7 @@ export class BasicWebServer {
    * 1. call the function associated with it.
    * 1. if all else fails, serve static files
    */
-  async handleRequest(req: Request): Promise<Response> {
+  private async handleRequest(req: Request): Promise<Response> {
     const pathname = new URL(req.url).pathname;
     const reqType = req.method.toLowerCase();
     const method =
@@ -55,30 +57,37 @@ export class BasicWebServer {
     // TODO: Multiple static folders?
     if (routeCallback) return await routeCallback(req);
     if (this._static) return serveDir(req, { fsRoot: this._static, showIndex: true });
+
+    // TODO: custom 404
     return new Response("🤷‍♂️", { status: 404 }); // 404
   }
 
-  get(route: string, callback: (req: Request) => Response | Promise<Response>) {
+  public get(route: string, callback: (req: Request) => Response | Promise<Response>) {
     this._get.set(route, callback);
   }
-  post(route: string, callback: (req: Request) => Response | Promise<Response>) {
+  public post(route: string, callback: (req: Request) => Response | Promise<Response>) {
     this._post.set(route, callback);
   }
-  put(route: string, callback: (req: Request) => Response | Promise<Response>) {
+  public put(route: string, callback: (req: Request) => Response | Promise<Response>) {
     this._put.set(route, callback);
   }
-  patch(route: string, callback: (req: Request) => Response | Promise<Response>) {
+  public patch(route: string, callback: (req: Request) => Response | Promise<Response>) {
     this._patch.set(route, callback);
   }
-  delete(route: string, callback: (req: Request) => Response | Promise<Response>) {
+  public delete(route: string, callback: (req: Request) => Response | Promise<Response>) {
     this._delete.set(route, callback);
   }
-  staticFolder(route: string) {
+
+  public options(route: string, callback: (req: Request) => Response | Promise<Response>) {
+    this._options.set(route, callback);
+  }
+
+  public staticFolder(route: string) {
     this._static = route;
   }
 }
 
-/* //* Thanks GPT!
+/* 
    TODO: Implement a feature to handle static files without file extensions.
    This could be done by checking if a file with the requested path and a .html extension exists in the static directory.
    If such a file exists, serve it. If not, treat the request as a dynamic route.
@@ -88,4 +97,10 @@ export class BasicWebServer {
    Another option is to check if a file exists with the requested path and serve it. If not, then you could treat it as a dynamic route.
    However, this could still potentially cause conflicts if a static file and a dynamic route have the same path.
    Consider the trade-offs of each approach and choose the one that best fits your needs.
-  */
+
+   TODO: custom 404 page
+   TODO: add cors headers
+   TODO: add websocket
+   
+
+   */

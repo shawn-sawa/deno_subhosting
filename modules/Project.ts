@@ -1,4 +1,3 @@
-// import { sendRequest } from "./utils.ts";
 import BaseClass from "./BaseClass.ts";
 
 import Deployment from "./Deployment.ts";
@@ -16,24 +15,27 @@ export default class Project extends BaseClass {
     this.description = details.description;
     this.createdAt = details.createdAt;
     this.updatedAt = details.updatedAt;
-
-    this.initDeployments();
   }
 
-  private async initDeployments() {
-    const deploymentList = await this.listDeployments();
-    if (deploymentList.status !== "success") return;
-    const deployments = deploymentList.data;
-    // TODO: fix this
-    if (!Array.isArray(deployments)) return;
+  async initDeployments() {
+    return new Promise(async (resolve, reject) => {
+      const deploymentList = await this.listDeployments();
+      if (deploymentList.status !== "success") return;
+      const deployments = deploymentList.data;
+      // TODO: fix this to handle errors
+      if (!Array.isArray(deployments)) return;
 
-    deployments.forEach((deploy) => {
-      const params: InitDeploymentParams = {
-        orgParams: this,
-        details: deploy,
-      };
+      deployments.forEach((deploy, n, arr) => {
+        const params: InitDeploymentParams = {
+          orgParams: this,
+          details: deploy,
+        };
 
-      this.deployments.push(new Deployment(params));
+        this.deployments.push(new Deployment(params));
+        if (n === arr.length - 1) {
+          resolve(this);
+        }
+      });
     });
   }
 
@@ -54,6 +56,7 @@ export default class Project extends BaseClass {
 
     return await this.sendRequest({ url, method, headers: this.headers });
   }
+
   async createDeployment(params: CreateDeploymentRequest): Promise<APIResponse<DeploymentDetails>> {
     const { entryPointUrl, importMapUrl, lockFileUrl, compilerOptions, assets, envVars, databases, description } = params;
 
@@ -68,7 +71,6 @@ export default class Project extends BaseClass {
       { key: "description", value: description },
     ].filter((item) => item.value !== null && item.value !== undefined);
 
-    // deno-lint-ignore no-explicit-any
     const body: { [key: string]: any } = {};
 
     deploymentData.forEach((item) => {
@@ -76,7 +78,7 @@ export default class Project extends BaseClass {
     });
 
     const method = "POST";
-    const url = this.url(`/deployments`);
+    const url = this.url(`/projects/${this.id}/deployments`);
 
     return await this.sendRequest({ url, method, headers: this.headers, body });
   }
@@ -98,11 +100,30 @@ export default class Project extends BaseClass {
     const url = this.url(`projects/${this.id}/analytics?${queryParams}`);
     return await this.sendRequest({ url, method, headers });
   }
-  /** Get the details for this project */
 
+  /** Get the details for this project */
   async getDetails(): Promise<APIResponse<ProjectDetails>> {
     const method = "GET";
     const url = this.url(`/projects/${this.id}`);
     return await this.sendRequest({ url, method, headers: this.headers });
+  }
+
+  async getDeployment(deploymentId: string): Promise<Deployment | Error> {
+    if (this.deployments.length) {
+      const deploy = this.deployments.find((deploy) => deploy.id === deploymentId);
+      if (deploy) {
+        return deploy;
+      }
+    }
+
+    const apiResponse = await this.listDeployments()!;
+    if (apiResponse.status === "error") return new Error(apiResponse.error!.message);
+    if (!apiResponse.data) return new Error("No deployments found");
+
+    const deploy = apiResponse.data.find((deploy) => deploy.id === deploymentId);
+
+    if (!deploy) return new Error("Deployment not found");
+
+    return new Deployment({ orgParams: this, details: deploy });
   }
 }
