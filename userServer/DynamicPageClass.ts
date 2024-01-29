@@ -1,3 +1,4 @@
+// TODO: links to old version
 import BasicWebServer from "https://gist.githubusercontent.com/shawn-sawa/84d1f1ac570cb5672c3232eef6c8e3f1/raw/40ed39312f806de779db11d206d6deca40b0a7f1/BasicWebServer.ts";
 
 export default class DynamicPage {

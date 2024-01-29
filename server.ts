@@ -1,4 +1,4 @@
-import { BasicWebServer } from "./modules/BasicWebServer.ts";
+import BasicWebServer from "./modules/BasicWebServer.ts";
 import SubhostingManager from "./modules/SubhostingManager.ts";
 const apiKey = Deno.env.get("DEPLOY_ACCESS_TOKEN");
 const orgId = Deno.env.get("DEPLOY_ORG_ID");

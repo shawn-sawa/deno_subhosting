@@ -1,6 +1,6 @@
 import { serveDir } from "https://deno.land/std@0.212.0/http/file_server.ts";
 
-export class BasicWebServer {
+export default class BasicWebServer {
   private _get: Map<string, (req: Request) => Response | Promise<Response>> = new Map();
   private _post: Map<string, (req: Request) => Response | Promise<Response>> = new Map();
   private _put: Map<string, (req: Request) => Response | Promise<Response>> = new Map();
@@ -48,6 +48,8 @@ export class BasicWebServer {
         ? this._patch
         : reqType === "delete"
         ? this._delete
+        : reqType === "options"
+        ? this._options
         : null;
 
     // Check if there's a callback function registered for the route
